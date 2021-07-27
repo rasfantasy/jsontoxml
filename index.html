@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+<script>
+    window.addEventListener('DOMContentLoaded', async (e) => {
+        let loc = window.location.search;
+        if (loc.length <= 0) {
+            document.body.append('Не хватает параметра pageUrl');
+        } else {
+            if (loc.indexOf('pageUrl') == -1) document.body.append('Не хватает параметра pageUrl');
+            else {
+                loc = loc.replace('?pageUrl=', '');
+                let data = await getData(loc);
+               // console.log(data);
+                let convXML = await OBJtoXML(data);
+                document.body.append(convXML);
+                async function OBJtoXML(obj) {
+                    var xml = '';
+                    for (var prop in obj) {
+                        xml += obj[prop] instanceof Array ? '' : "<" + prop + ">";
+                        if (obj[prop] instanceof Array) {
+                            for (var array in obj[prop]) {
+                                xml += "<" + prop + ">";
+                                xml += OBJtoXML(new Object(obj[prop][array]));
+                                xml += "</" + prop + ">";
+                            }
+                        } else if (typeof obj[prop] == "object") {
+                            xml += OBJtoXML(new Object(obj[prop]));
+                        } else {
+                            xml += obj[prop];
+                        }
+                        xml += obj[prop] instanceof Array ? '' : "</" + prop + ">";
+                    }
+                    var xml = xml.replace(/<\/?[0-9]{1,}>/g, '');
+                    return xml
+                }
+
+                async function getData(url) {
+                    const result = await fetch('get.php?pageUrl=' + loc, {
+                        method: 'GET',
+                        headers: {
+                            'Content-type': 'application/json' //если с JSON то добавляем контет тайп, если обычная формдата то ничего не настраиваем
+                        }
+                    });
+                    return await result.json();
+                }
+
+
+            }
+        }
+    });
+</script>
+
+</html>
